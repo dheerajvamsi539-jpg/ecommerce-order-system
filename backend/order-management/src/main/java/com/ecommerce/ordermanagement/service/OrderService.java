@@ -20,7 +20,25 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
+    public Order getOrderById(Long id) {
+        return orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+    }
+
     public Order createOrder(@NonNull Order order) {
         return java.util.Objects.requireNonNull(orderRepository.save(order));
+    }
+
+    public Order updateOrder(Long id, Order orderDetails) {
+        Order order = getOrderById(id);
+        order.setCustomerName(orderDetails.getCustomerName());
+        order.setCustomerEmail(orderDetails.getCustomerEmail());
+        order.setTotalAmount(orderDetails.getTotalAmount());
+        order.setStatus(orderDetails.getStatus());
+        return orderRepository.save(order);
+    }
+
+    public void deleteOrder(Long id) {
+        Order order = getOrderById(id);
+        orderRepository.delete(order);
     }
 }

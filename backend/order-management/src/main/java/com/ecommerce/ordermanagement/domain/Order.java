@@ -14,6 +14,7 @@ public class Order {
     private Long id;
 
     private String customerName;
+    private String customerEmail;
     private Double totalAmount;
     private String status;
 
