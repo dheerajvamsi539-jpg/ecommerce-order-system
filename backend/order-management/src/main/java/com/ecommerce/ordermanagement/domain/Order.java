@@ -17,6 +17,7 @@ public class Order {
     private String customerEmail;
     private Double totalAmount;
     private String status;
+    private String comments;
 
     private LocalDateTime createdAt;
 

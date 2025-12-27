@@ -34,11 +34,18 @@ public class OrderService {
         order.setCustomerEmail(orderDetails.getCustomerEmail());
         order.setTotalAmount(orderDetails.getTotalAmount());
         order.setStatus(orderDetails.getStatus());
+        order.setComments(orderDetails.getComments());
         return orderRepository.save(order);
     }
 
     public void deleteOrder(Long id) {
         Order order = getOrderById(id);
         orderRepository.delete(order);
+    }
+
+    public Order addComment(Long id, String comment) {
+        Order order = getOrderById(id);
+        order.setComments(comment);
+        return orderRepository.save(order);
     }
 }

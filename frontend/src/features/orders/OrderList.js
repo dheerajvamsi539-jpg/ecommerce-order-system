@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchOrders, addOrder, updateOrder, deleteOrder } from './ordersSlice';
+import { fetchOrders, addOrder, updateOrder, deleteOrder, addOrderComment } from './ordersSlice';
+import { selectAuth } from '../auth/authSlice';
 import OrderForm from './OrderForm';
 
 const OrderList = () => {
     const dispatch = useDispatch();
     const { items, status, error } = useSelector((state) => state.orders);
+    const { user } = useSelector(selectAuth);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingOrder, setEditingOrder] = useState(null);
+    const [newComment, setNewComment] = useState({});
 
     useEffect(() => {
         if (status === 'idle') {
@@ -44,6 +47,13 @@ const OrderList = () => {
         setIsFormOpen(false);
     };
 
+    const handleCommentSubmit = (id) => {
+        if (newComment[id]) {
+            dispatch(addOrderComment({ id, comment: newComment[id] }));
+            setNewComment({ ...newComment, [id]: '' });
+        }
+    };
+
     if (status === 'loading') {
         return <div className="text-center mt-5"><div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div></div>;
     }
@@ -52,13 +62,17 @@ const OrderList = () => {
         return <div className="alert alert-danger mt-3">Error: {error}</div>;
     }
 
+    const isAdmin = user && user.role === 'ROLE_ADMIN';
+
     return (
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Orders</h2>
-                <button className="btn btn-primary" onClick={handleAddClick}>
-                    Add New Order
-                </button>
+                {isAdmin && (
+                    <button className="btn btn-primary" onClick={handleAddClick}>
+                        Add New Order
+                    </button>
+                )}
             </div>
 
             {isFormOpen && (
@@ -79,8 +93,9 @@ const OrderList = () => {
                                 <th>ID</th>
                                 <th>Customer Name</th>
                                 <th>Email</th>
-                                <th>Total Amout</th>
+                                <th>Total Amount</th>
                                 <th>Status</th>
+                                <th>Comments</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -93,26 +108,52 @@ const OrderList = () => {
                                     <td>${order.totalAmount}</td>
                                     <td>
                                         <span className={`badge badge-${order.status === 'COMPLETED' ? 'success' :
-                                                order.status === 'CANCELLED' ? 'danger' :
-                                                    order.status === 'SHIPPED' ? 'info' :
-                                                        'warning'
+                                            order.status === 'CANCELLED' ? 'danger' :
+                                                order.status === 'SHIPPED' ? 'info' :
+                                                    'warning'
                                             }`}>
                                             {order.status}
                                         </span>
                                     </td>
                                     <td>
-                                        <button
-                                            className="btn btn-sm btn-outline-primary mr-2"
-                                            onClick={() => handleEditClick(order)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-outline-danger"
-                                            onClick={() => handleDeleteClick(order.id)}
-                                        >
-                                            Delete
-                                        </button>
+                                        <div className="small text-muted mb-1">{order.comments || 'No comments'}</div>
+                                        <div className="input-group input-group-sm">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Add comment..."
+                                                value={newComment[order.id] || ''}
+                                                onChange={(e) => setNewComment({ ...newComment, [order.id]: e.target.value })}
+                                            />
+                                            <div className="input-group-append">
+                                                <button
+                                                    className="btn btn-outline-secondary"
+                                                    type="button"
+                                                    onClick={() => handleCommentSubmit(order.id)}
+                                                >
+                                                    Post
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {isAdmin && (
+                                            <>
+                                                <button
+                                                    className="btn btn-sm btn-outline-primary mr-2"
+                                                    onClick={() => handleEditClick(order)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger"
+                                                    onClick={() => handleDeleteClick(order.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
+                                        {!isAdmin && <span className="text-muted small">View Only</span>}
                                     </td>
                                 </tr>
                             ))}

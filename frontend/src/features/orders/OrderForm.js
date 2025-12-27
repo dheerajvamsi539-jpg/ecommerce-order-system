@@ -6,6 +6,7 @@ const OrderForm = ({ initialData, onSubmit, onCancel }) => {
         customerEmail: '',
         totalAmount: '',
         status: 'PENDING',
+        comments: '',
     });
 
     useEffect(() => {
@@ -72,12 +73,18 @@ const OrderForm = ({ initialData, onSubmit, onCancel }) => {
                             value={order.status}
                             onChange={handleChange}
                         >
-                            <option value="PENDING">PENDING</option>
-                            <option value="PROCESSING">PROCESSING</option>
-                            <option value="SHIPPED">SHIPPED</option>
-                            <option value="COMPLETED">COMPLETED</option>
                             <option value="CANCELLED">CANCELLED</option>
                         </select>
+                    </div>
+                    <div className="form-group">
+                        <label>Comments</label>
+                        <textarea
+                            name="comments"
+                            className="form-control"
+                            value={order.comments || ''}
+                            onChange={handleChange}
+                            rows="3"
+                        ></textarea>
                     </div>
                     <div className="mt-3">
                         <button type="submit" className="btn btn-success mr-2">

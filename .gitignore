@@ -1,0 +1,22 @@
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build systems
+.gradle/
+build/
+target/
+bin/
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+orders.json
+*.log

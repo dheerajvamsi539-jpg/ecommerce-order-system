@@ -1,17 +1,26 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => {
-    const response = await fetch('/api/orders');
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (_, { getState }) => {
+    const { auth } = getState();
+    const response = await fetch('/api/orders', {
+        headers: {
+            'Authorization': auth.user.authHeader
+        }
+    });
     if (!response.ok) {
         throw new Error('Failed to fetch orders');
     }
     return response.json();
 });
 
-export const addOrder = createAsyncThunk('orders/addOrder', async (order) => {
+export const addOrder = createAsyncThunk('orders/addOrder', async (order, { getState }) => {
+    const { auth } = getState();
     const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': auth.user.authHeader
+        },
         body: JSON.stringify(order),
     });
     if (!response.ok) {
@@ -20,10 +29,14 @@ export const addOrder = createAsyncThunk('orders/addOrder', async (order) => {
     return response.json();
 });
 
-export const updateOrder = createAsyncThunk('orders/updateOrder', async (order) => {
+export const updateOrder = createAsyncThunk('orders/updateOrder', async (order, { getState }) => {
+    const { auth } = getState();
     const response = await fetch(`/api/orders/${order.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': auth.user.authHeader
+        },
         body: JSON.stringify(order),
     });
     if (!response.ok) {
@@ -32,14 +45,34 @@ export const updateOrder = createAsyncThunk('orders/updateOrder', async (order) 
     return response.json();
 });
 
-export const deleteOrder = createAsyncThunk('orders/deleteOrder', async (id) => {
+export const deleteOrder = createAsyncThunk('orders/deleteOrder', async (id, { getState }) => {
+    const { auth } = getState();
     const response = await fetch(`/api/orders/${id}`, {
         method: 'DELETE',
+        headers: {
+            'Authorization': auth.user.authHeader
+        }
     });
     if (!response.ok) {
         throw new Error('Failed to delete order');
     }
     return id;
+});
+
+export const addOrderComment = createAsyncThunk('orders/addOrderComment', async ({ id, comment }, { getState }) => {
+    const { auth } = getState();
+    const response = await fetch(`/api/orders/${id}/comment`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': auth.user.authHeader
+        },
+        body: JSON.stringify({ comment }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to add comment');
+    }
+    return response.json();
 });
 
 const ordersSlice = createSlice({
@@ -74,6 +107,12 @@ const ordersSlice = createSlice({
             })
             .addCase(deleteOrder.fulfilled, (state, action) => {
                 state.items = state.items.filter((order) => order.id !== action.payload);
+            })
+            .addCase(addOrderComment.fulfilled, (state, action) => {
+                const index = state.items.findIndex((order) => order.id === action.payload.id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
             });
     },
 });

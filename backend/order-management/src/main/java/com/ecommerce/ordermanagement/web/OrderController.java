@@ -6,6 +6,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -41,5 +42,10 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public void deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
+    }
+
+    @PatchMapping("/{id}/comment")
+    public Order addComment(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        return orderService.addComment(id, payload.get("comment"));
     }
 }
