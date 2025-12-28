@@ -20,3 +20,5 @@ Thumbs.db
 # Project specific
 orders.json
 *.log
+*.pid
+.env

@@ -14,5 +14,49 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  accounting_db:
+    image: postgres:15-alpine
+    container_name: accounting_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: accountingdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - accounting_db_data:/var/lib/postgresql/data
+
+  accounting-service:
+    build:
+      context: ./backend/accounting-service
+    container_name: accounting-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://accounting_db:5432/accountingdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - accounting_db
+
+  order-management:
+    build:
+      context: ./backend/order-management
+    container_name: order-management
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order_db:5432/ordermgmtdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      ACCOUNTING_SERVICE_URL: http://accounting-service:8081/api/accounting
+    depends_on:
+      - db
+      - accounting-service
+
 volumes:
   db_data:
+  accounting_db_data:
