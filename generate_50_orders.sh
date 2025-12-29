@@ -10,11 +10,15 @@ do
     AMOUNT=$(echo "scale=2; $RANDOM/100 + 10" | bc)
     EMAIL="${NAME,,}@example.com"
     
-    echo "Creating order $i: $NAME ($EMAIL), \$$AMOUNT, $STATUS"
+    # Generate random date within last 30 days
+    DAYS_AGO=$((RANDOM % 30))
+    CREATED_AT=$(date -d "$DAYS_AGO days ago" +"%Y-%m-%dT%H:%M:%S")
+
+    echo "Creating order $i: $NAME ($EMAIL), \$$AMOUNT, $STATUS, $CREATED_AT"
     
     curl -s -X POST -H "Content-Type: application/json" \
          -H "Authorization: Basic YWRtaW46cGFzc3dvcmQ=" \
-         -d "{\"customerName\": \"$NAME\", \"customerEmail\": \"$EMAIL\", \"totalAmount\": $AMOUNT, \"status\": \"$STATUS\"}" \
+         -d "{\"customerName\": \"$NAME\", \"customerEmail\": \"$EMAIL\", \"totalAmount\": $AMOUNT, \"status\": \"$STATUS\", \"createdAt\": \"$CREATED_AT\"}" \
          http://localhost:8090/api/orders > /dev/null
 done
 

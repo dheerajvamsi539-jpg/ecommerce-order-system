@@ -29,7 +29,7 @@ public class AccountingController {
 
     @PostMapping("/transactions")
     public Transaction recordTransaction(
-            @RequestParam Long accountId,
+            @RequestParam @org.springframework.lang.NonNull Long accountId,
             @RequestParam String description,
             @RequestParam BigDecimal amount,
             @RequestParam TransactionType type) {
@@ -37,12 +37,12 @@ public class AccountingController {
     }
 
     @GetMapping("/accounts/{id}/transactions")
-    public List<Transaction> getTransactions(@PathVariable Long id) {
+    public List<Transaction> getTransactions(@PathVariable @org.springframework.lang.NonNull Long id) {
         return accountingService.getTransactionsForAccount(id);
     }
 
     @GetMapping("/accounts/{id}/balance")
-    public BigDecimal getBalance(@PathVariable Long id) {
+    public BigDecimal getBalance(@PathVariable @org.springframework.lang.NonNull Long id) {
         return accountingService.getBalance(id);
     }
 }

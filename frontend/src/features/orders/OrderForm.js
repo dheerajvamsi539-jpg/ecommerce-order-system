@@ -73,6 +73,10 @@ const OrderForm = ({ initialData, onSubmit, onCancel }) => {
                             value={order.status}
                             onChange={handleChange}
                         >
+                            <option value="PENDING">PENDING</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="SHIPPED">SHIPPED</option>
+                            <option value="COMPLETED">COMPLETED</option>
                             <option value="CANCELLED">CANCELLED</option>
                         </select>
                     </div>

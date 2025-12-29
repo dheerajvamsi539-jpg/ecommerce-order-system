@@ -9,8 +9,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Import added
+import org.springframework.security.crypto.password.PasswordEncoder; // Import added
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.header.writers.StaticHeadersWriter;
+// Removed unused StaticHeadersWriter import
 import org.springframework.http.HttpMethod;
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -37,16 +39,21 @@ public class SecurityConfig {
         }
 
         @Bean
-        public UserDetailsService userDetailsService() {
-                UserDetails viewer = User.withDefaultPasswordEncoder()
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
+
+        @Bean
+        public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+                UserDetails viewer = User.builder()
                                 .username("viewer")
-                                .password("password")
+                                .password(passwordEncoder.encode("password"))
                                 .roles("VIEWER")
                                 .build();
 
-                UserDetails admin = User.withDefaultPasswordEncoder()
+                UserDetails admin = User.builder()
                                 .username("admin")
-                                .password("password")
+                                .password(passwordEncoder.encode("password"))
                                 .roles("ADMIN")
                                 .build();
 

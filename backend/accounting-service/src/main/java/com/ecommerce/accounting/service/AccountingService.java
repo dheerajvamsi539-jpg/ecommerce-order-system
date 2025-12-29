@@ -30,7 +30,8 @@ public class AccountingService {
     }
 
     @Transactional
-    public Transaction recordTransaction(Long accountId, String description, BigDecimal amount, TransactionType type) {
+    public Transaction recordTransaction(@org.springframework.lang.NonNull Long accountId, String description,
+            BigDecimal amount, TransactionType type) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
@@ -46,11 +47,11 @@ public class AccountingService {
         return transactionRepository.save(transaction);
     }
 
-    public List<Transaction> getTransactionsForAccount(Long accountId) {
+    public List<Transaction> getTransactionsForAccount(@org.springframework.lang.NonNull Long accountId) {
         return transactionRepository.findByAccountIdOrderByTimestampDesc(accountId);
     }
 
-    public BigDecimal getBalance(Long accountId) {
+    public BigDecimal getBalance(@org.springframework.lang.NonNull Long accountId) {
         return accountRepository.findById(accountId)
                 .map(Account::getBalance)
                 .orElse(BigDecimal.ZERO);
