@@ -7,13 +7,35 @@ const Login = () => {
     const [password, setPassword] = useState('password');
     const dispatch = useDispatch();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // In a real app, you'd verify credentials with the backend
-        // For this demo, we'll just set the role based on username
-        const role = username === 'admin' ? 'ROLE_ADMIN' : 'ROLE_VIEWER';
-        const authHeader = 'Basic ' + btoa(username + ':' + password);
-        dispatch(login({ username, role, authHeader }));
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Map roles to what the UI expects if necessary, 
+                // but usually the UI should just check the roles list
+                const role = data.roles.includes('ROLE_ADMIN') ? 'ROLE_ADMIN' : 'ROLE_VIEWER';
+                dispatch(login({ 
+                    username: data.username, 
+                    role, 
+                    token: data.token,
+                    authHeader: 'Bearer ' + data.token 
+                }));
+            } else {
+                alert('Login failed: Invalid credentials');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Login failed: Could not connect to server');
+        }
     };
 
     return (

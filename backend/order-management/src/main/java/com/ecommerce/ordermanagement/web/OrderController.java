@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+...
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/orders")
@@ -20,17 +23,17 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderService.getAllOrders(pageable);
     }
-
+...
     @GetMapping("/{id}")
     public Order getOrderById(@PathVariable Long id) {
         return orderService.getOrderById(id);
     }
 
     @PostMapping
-    public Order createOrder(@RequestBody @NonNull Order order) {
+    public Order createOrder(@RequestBody @jakarta.validation.Valid @NonNull Order order) {
         return orderService.createOrder(order);
     }
 

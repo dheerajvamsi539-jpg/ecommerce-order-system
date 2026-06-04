@@ -1,6 +1,7 @@
 package com.ecommerce.ordermanagement.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -13,10 +14,19 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Customer name is mandatory")
     private String customerName;
+
+    @Email(message = "Customer email should be valid")
     private String customerEmail;
+
+    @NotNull(message = "Total amount is mandatory")
+    @Positive(message = "Total amount must be positive")
     private Double totalAmount;
+
+    @NotBlank(message = "Status is mandatory")
     private String status;
+
     private String comments;
 
     private LocalDateTime createdAt;

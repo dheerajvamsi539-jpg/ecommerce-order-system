@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import OrderList from './features/orders/OrderList';
 import AccountList from './features/accounting/AccountList';
 import Login from './features/auth/Login';
@@ -11,11 +13,17 @@ function App() {
   const dispatch = useDispatch();
 
   if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <>
+        <Login />
+        <ToastContainer position="bottom-right" />
+      </>
+    );
   }
 
   return (
     <div className="App">
+      <ToastContainer position="bottom-right" />
       <header className="App-header bg-dark text-white p-3 d-flex justify-content-between align-items-center shadow-sm">
         <div className="d-flex align-items-center">
           <h1 className="h4 mb-0 mr-4">E-Commerce MS</h1>

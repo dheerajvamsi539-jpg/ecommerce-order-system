@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-
+import com.ecommerce.accounting.dto.OrderCompletedEvent;
+import org.springframework.kafka.annotation.KafkaListener;
+...
 @Service
 public class AccountingService {
 
@@ -21,7 +23,15 @@ public class AccountingService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @KafkaListener(topics = "order-completed", groupId = "accounting-group")
+    public void handleOrderCompleted(OrderCompletedEvent event) {
+        System.out.println("Received OrderCompletedEvent from Kafka: " + event);
+        // Assume Account ID 1 is the main sales account as per previous synchronous logic
+        recordTransaction(1L, event.getDescription(), event.getAmount(), TransactionType.INCOME);
+    }
+
     public List<Account> getAllAccounts() {
+...
         return accountRepository.findAll();
     }
 

@@ -3,6 +3,20 @@
 NAMES=("Alice" "Bob" "Charlie" "David" "Eve" "Frank" "Grace" "Heidi" "Ivan" "Judy")
 STATUSES=("PENDING" "PROCESSING" "SHIPPED" "COMPLETED" "CANCELLED")
 
+echo "Logging in to get JWT token..."
+LOGIN_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
+     -d '{"username": "admin", "password": "password"}' \
+     http://localhost:8090/api/auth/login)
+
+TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.token')
+
+if [ "$TOKEN" == "null" ] || [ -z "$TOKEN" ]; then
+    echo "Failed to obtain JWT token. Response: $LOGIN_RESPONSE"
+    exit 1
+fi
+
+echo "Login successful. Starting order creation..."
+
 for i in {1..50}
 do
     NAME=${NAMES[$RANDOM % ${#NAMES[@]}]}
@@ -17,7 +31,7 @@ do
     echo "Creating order $i: $NAME ($EMAIL), \$$AMOUNT, $STATUS, $CREATED_AT"
     
     curl -s -X POST -H "Content-Type: application/json" \
-         -H "Authorization: Basic YWRtaW46cGFzc3dvcmQ=" \
+         -H "Authorization: Bearer $TOKEN" \
          -d "{\"customerName\": \"$NAME\", \"customerEmail\": \"$EMAIL\", \"totalAmount\": $AMOUNT, \"status\": \"$STATUS\", \"createdAt\": \"$CREATED_AT\"}" \
          http://localhost:8090/api/orders > /dev/null
 done

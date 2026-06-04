@@ -1,78 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../app/api';
 
-export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (_, { getState }) => {
-    const { auth } = getState();
-    const response = await fetch('/api/orders', {
-        headers: {
-            'Authorization': auth.user.authHeader
-        }
-    });
-    if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-    }
-    return response.json();
+export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (params) => {
+    const response = await api.get('/api/orders', { params });
+    return response.data;
 });
 
-export const addOrder = createAsyncThunk('orders/addOrder', async (order, { getState }) => {
-    const { auth } = getState();
-    const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': auth.user.authHeader
-        },
-        body: JSON.stringify(order),
-    });
-    if (!response.ok) {
-        throw new Error('Failed to add order');
-    }
-    return response.json();
+export const addOrder = createAsyncThunk('orders/addOrder', async (order) => {
+    const response = await api.post('/api/orders', order);
+    return response.data;
 });
 
-export const updateOrder = createAsyncThunk('orders/updateOrder', async (order, { getState }) => {
-    const { auth } = getState();
-    const response = await fetch(`/api/orders/${order.id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': auth.user.authHeader
-        },
-        body: JSON.stringify(order),
-    });
-    if (!response.ok) {
-        throw new Error('Failed to update order');
-    }
-    return response.json();
+export const updateOrder = createAsyncThunk('orders/updateOrder', async (order) => {
+    const response = await api.put(`/api/orders/${order.id}`, order);
+    return response.data;
 });
 
-export const deleteOrder = createAsyncThunk('orders/deleteOrder', async (id, { getState }) => {
-    const { auth } = getState();
-    const response = await fetch(`/api/orders/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': auth.user.authHeader
-        }
-    });
-    if (!response.ok) {
-        throw new Error('Failed to delete order');
-    }
+export const deleteOrder = createAsyncThunk('orders/deleteOrder', async (id) => {
+    await api.delete(`/api/orders/${id}`);
     return id;
 });
 
-export const addOrderComment = createAsyncThunk('orders/addOrderComment', async ({ id, comment }, { getState }) => {
-    const { auth } = getState();
-    const response = await fetch(`/api/orders/${id}/comment`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': auth.user.authHeader
-        },
-        body: JSON.stringify({ comment }),
-    });
-    if (!response.ok) {
-        throw new Error('Failed to add comment');
-    }
-    return response.json();
+export const addOrderComment = createAsyncThunk('orders/addOrderComment', async ({ id, comment }) => {
+    const response = await api.patch(`/api/orders/${id}/comment`, { comment });
+    return response.data;
 });
 
 const ordersSlice = createSlice({
@@ -90,7 +41,7 @@ const ordersSlice = createSlice({
             })
             .addCase(fetchOrders.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.items = action.payload;
+                state.items = action.payload.content || action.payload;
             })
             .addCase(fetchOrders.rejected, (state, action) => {
                 state.status = 'failed';

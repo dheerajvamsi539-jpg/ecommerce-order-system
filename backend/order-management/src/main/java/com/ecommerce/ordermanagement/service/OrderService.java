@@ -3,12 +3,15 @@ package com.ecommerce.ordermanagement.service;
 import com.ecommerce.ordermanagement.domain.OrderStatusHistory;
 import com.ecommerce.ordermanagement.domain.Order;
 import com.ecommerce.ordermanagement.repository.OrderRepository;
+import com.ecommerce.ordermanagement.dto.OrderCompletedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,17 +21,16 @@ public class OrderService {
     private final OrderRepository orderRepository;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private KafkaTemplate<String, OrderCompletedEvent> kafkaTemplate;
 
-    @org.springframework.beans.factory.annotation.Value("${accounting.service.url}")
-    private String accountingServiceUrl;
+    private static final String TOPIC = "order-completed";
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
     }
 
     public Order getOrderById(Long id) {
@@ -98,21 +100,16 @@ public class OrderService {
 
     private void recordIncome(Order order) {
         try {
-            // Assume Account ID 1 is the main sales account
-            String url = UriComponentsBuilder
-                    .fromUriString(accountingServiceUrl + "/transactions")
-                    .queryParam("accountId", 1)
-                    .queryParam("description", "Order #" + order.getId() + " Completion")
-                    .queryParam("amount", order.getTotalAmount())
-                    .queryParam("type", "INCOME")
-                    .encode()
-                    .build()
-                    .toUriString();
-
-            restTemplate.postForObject(url, null, Object.class);
+            OrderCompletedEvent event = new OrderCompletedEvent(
+                    order.getId(),
+                    BigDecimal.valueOf(order.getTotalAmount()),
+                    "Order #" + order.getId() + " Completion"
+            );
+            kafkaTemplate.send(TOPIC, event);
+            System.out.println("Published OrderCompletedEvent to Kafka for order: " + order.getId());
         } catch (Exception e) {
             // Log error but don't fail order operation
-            System.err.println("Failed to record income for order " + order.getId() + ": " + e.getMessage());
+            System.err.println("Failed to publish order completion event for order " + order.getId() + ": " + e.getMessage());
         }
     }
 
